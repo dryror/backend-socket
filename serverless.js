@@ -1,8 +1,8 @@
 const { resolve } = require('path')
 const { prompt } = require('enquirer')
 const WebSocket = require('ws')
-const { chalk, sleep, fileExists } = require('../../src/utils')
-const { Component } = require('../../src')
+const chalk = require('chalk')
+const { Component, sleep, fileExists } = require('@serverless/components')
 
 const isJson = (body) => {
   try {
@@ -35,7 +35,7 @@ class Socket extends Component {
 
     this.cli.status(`Deploying AwsLambda`)
 
-    const lambda = await this.load('AwsLambda')
+    const lambda = await this.load('@serverless/aws-lambda')
     const lambdaOutputs = await lambda(inputs)
 
     inputs.routes = {
@@ -46,7 +46,7 @@ class Socket extends Component {
 
     this.cli.status(`Deploying WebSockets`)
 
-    const websockets = await this.load('AwsWebSockets')
+    const websockets = await this.load('@serverless/aws-websockets')
     const websocketsOutputs = await websockets(inputs)
 
     this.state.url = websocketsOutputs.url
@@ -71,8 +71,8 @@ class Socket extends Component {
   async remove() {
     this.cli.status(`Removing`)
 
-    const lambda = await this.load('AwsLambda')
-    const websockets = await this.load('AwsWebSockets')
+    const lambda = await this.load('@serverless/aws-lambda')
+    const websockets = await this.load('@serverless/aws-websockets')
 
     const lambdaOutputs = await lambda.remove()
     const websocketsOutputs = await websockets.remove()
