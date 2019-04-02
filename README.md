@@ -121,6 +121,8 @@ Socket:
 $ components
 ```
 
+&nbsp;
+
 ### New to Components?
 
 Checkout the [Serverless Components](https://github.com/serverless/components) repo for more information.
