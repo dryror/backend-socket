@@ -35,13 +35,55 @@ the directory should look something like this:
 
 ```
 
-the `socket.js` file should minimally look something like this:
+Here's how the `socket.js` file works:
 
 ```js
-on('default', async (data, socket) => {
-  socket.send(data)
+  /*
+   * you simply handle socket events in the format below.
+   * the first argument of the callback function is the data passed in from the client
+   * the second argument is the socket object. It contains helpful data and methods.
+   * 
+   * you can return a 
+   * check below for more examples.
+  /*
+
+
+// this function gets triggered on new connections
+// if not provided, connections are successful by default
+on('connect', async (data, socket) => {
+
+  // you can return status codes directly
+  return 200
 })
 
+// this function gets triggered whenever a client disconnects
+// if not provided, disconnections are not handled
+on('disconnect', async (data, socket) => {
+  // this is where you handle disconnections
+  // e.g. business logic that removes connections from a db table
+})
+
+/*
+ * this function gets triggered whenever a client sends data to the specified route
+ * in this example, you're handling the "message" route
+ * so clients need to send the following JSON data: { "route": "message", "data": { "foo": "bar" } }
+ */
+on('message', async (data, socket) => {
+
+  // you can send data to the connecting client with the send() function
+  await socket.send(data)
+})
+
+// this function gets triggered to handle any other data that is not handled above
+on('default', async (data, socket) => {
+  
+  // the following data is available in the socket object
+  const { id, domain, stage } = socket
+  
+  // you can also send data to a specific connectionId (that you might have saved in a table)
+  // this is very useful for a broadcasting functionality
+  await socket.send(data, connectionId)
+})
 ```
 
 For more info on working with the `socket.js` file, checkout the [Socket Component docs](https://github.com/serverless-components/socket).
@@ -74,7 +116,7 @@ Socket:
 
 ```
 
-### 4.Deploy
+### 4. Deploy
 
 ```
 $ components
