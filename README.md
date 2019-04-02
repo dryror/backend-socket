@@ -40,25 +40,30 @@ Here's how the `socket.js` file works:
 ```js
 
 /*
- * you simply handle socket events in the format below.
+ * you simply handle socket events in the format below:
+ *
  * the first argument of the callback function is the data passed in from the client
  * the second argument is the socket object. It contains helpful data and methods.
- * 
- * you can return a 
- * check below for more examples.
+ *
  */
 
 
-// this function gets triggered on new connections
-// if not provided, connections are successful by default
+/*
+ * this function gets triggered on new connections
+ * if not provided, connections are successful by default
+ */
 on('connect', async (data, socket) => {
-
+  // the following data is available in the socket object
+  const { id, domain, stage } = socket
+  
   // you can return status codes directly
   return 200
 })
 
-// this function gets triggered whenever a client disconnects
-// if not provided, disconnections are not handled
+/*
+ * this function gets triggered whenever a client disconnects
+ * if not provided, disconnections are not handled
+ */
 on('disconnect', async (data, socket) => {
   // this is where you handle disconnections
   // e.g. business logic that removes connections from a db table
@@ -75,12 +80,10 @@ on('message', async (data, socket) => {
   await socket.send(data)
 })
 
-// this function gets triggered to handle any other data that is not handled above
+/*
+ * this function gets triggered to handle any other data that is not handled above
+ */
 on('default', async (data, socket) => {
-  
-  // the following data is available in the socket object
-  const { id, domain, stage } = socket
-  
   // you can also send data to a specific connectionId (that you might have saved in a table)
   // this is very useful for a broadcasting functionality
   await socket.send(data, connectionId)
