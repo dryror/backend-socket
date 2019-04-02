@@ -89,7 +89,7 @@ on('default', async (data, socket) => {
 
 ### 3. Configure
 
-All the following configuration are optional.
+All the following inputs are optional. However, they allow you to configure your Lambda compute instance and pass environment variables.
 
 ```yml
 # serverless.yml
