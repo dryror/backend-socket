@@ -39,7 +39,7 @@ Here's how the `socket.js` file works:
 ```js
 
 /*
- * you simply handle socket events in the format below:
+ * you simply run a handler function for each socket event
  *
  * the first argument of the callback function is the data passed in from the client
  * the second argument is the socket object. It contains helpful data and methods.
