@@ -38,14 +38,15 @@ the directory should look something like this:
 Here's how the `socket.js` file works:
 
 ```js
-  /*
-   * you simply handle socket events in the format below.
-   * the first argument of the callback function is the data passed in from the client
-   * the second argument is the socket object. It contains helpful data and methods.
-   * 
-   * you can return a 
-   * check below for more examples.
-  /*
+
+/*
+ * you simply handle socket events in the format below.
+ * the first argument of the callback function is the data passed in from the client
+ * the second argument is the socket object. It contains helpful data and methods.
+ * 
+ * you can return a 
+ * check below for more examples.
+/*
 
 
 // this function gets triggered on new connections
