@@ -32,7 +32,6 @@ the directory should look something like this:
 |- socket.js
 |- serverless.yml
 |- package.json # optional
-
 ```
 
 Here's how the `socket.js` file works:
@@ -44,7 +43,6 @@ Here's how the `socket.js` file works:
  *
  * the first argument of the callback function is the data passed in from the client
  * the second argument is the socket object. It contains helpful data and methods.
- *
  */
 
 
@@ -62,10 +60,9 @@ on('connect', async (data, socket) => {
 
 /*
  * this function gets triggered whenever a client disconnects
- * if not provided, disconnections are not handled
+ * if not provided, disconnection is not handled
  */
 on('disconnect', async (data, socket) => {
-  // this is where you handle disconnections
   // e.g. business logic that removes connections from a db table
 })
 
@@ -89,8 +86,6 @@ on('default', async (data, socket) => {
   await socket.send(data, connectionId)
 })
 ```
-
-For more info on working with the `socket.js` file, checkout the [Socket Component docs](https://github.com/serverless-components/socket).
 
 ### 3. Configure
 
