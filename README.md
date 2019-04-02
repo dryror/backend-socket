@@ -1,6 +1,6 @@
 &nbsp;
 
-Deploy a zero config Socket backend in seconds using [Serverless Components](https://github.com/serverless/components) with just a few lines of code.
+Deploy a zero configuration Socket backend in seconds using [Serverless Components](https://github.com/serverless/components) with just a few lines of code.
 
 &nbsp;
 
