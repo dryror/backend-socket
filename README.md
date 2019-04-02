@@ -46,7 +46,7 @@ Here's how the `socket.js` file works:
  * 
  * you can return a 
  * check below for more examples.
-/*
+ */
 
 
 // this function gets triggered on new connections
