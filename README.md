@@ -51,7 +51,7 @@ Here's how the `socket.js` file works:
  * if not provided, connections are successful by default
  */
 on('connect', async (data, socket) => {
-  // the following data is available in the socket object
+  // the following data are available in the socket object
   const { id, domain, stage } = socket
   
   // you can return status codes directly
