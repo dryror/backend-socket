@@ -36,6 +36,8 @@ class Socket extends Component {
     this.state.name = inputs.name
     await this.save()
 
+    this.cli.status(`Deploying Aws S3 Bucket`)
+
     // Create S3 Bucket
     const lambdaBucket = await this.load('@serverless/aws-s3')
     const lambdaBucketOutputs = await lambdaBucket({
@@ -44,6 +46,8 @@ class Socket extends Component {
     })
     this.state.lambdaBucketName = lambdaBucketOutputs.name
     await this.save()
+
+    this.cli.status(`Deploying Aws Lambda Function`)
 
     // make sure user does not overwrite the following
     inputs.runtime = 'nodejs8.10'
@@ -54,8 +58,6 @@ class Socket extends Component {
     inputs.description = inputs.description || 'Serverless Socket'
     inputs.stage = this.context.stage
     inputs.bucket = lambdaBucketOutputs.name
-
-    this.cli.status(`Deploying AwsLambda`)
 
     const lambda = await this.load('@serverless/aws-lambda')
     const lambdaOutputs = await lambda(inputs)
