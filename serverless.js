@@ -42,8 +42,6 @@ class Socket extends Component {
       name: `${inputs.name}-bucket`,
       region: `us-east-1`,
     })
-
-    this.state.name = inputs.name
     this.state.lambdaBucketName = lambdaBucketOutputs.name
     await this.save()
 
