@@ -63,7 +63,7 @@ on('connect', async (data, socket) => {
  * if not provided, disconnection is not handled
  */
 on('disconnect', async (data, socket) => {
-  // e.g. business logic that removes connections from a db table
+  // e.g. business logic that removes connection ids from a db table
 })
 
 /*
@@ -73,7 +73,7 @@ on('disconnect', async (data, socket) => {
  */
 on('message', async (data, socket) => {
 
-  // you can send data to the connecting client with the send() function
+  // you can send data to the connected client with the send() function
   await socket.send(data)
 })
 
@@ -81,7 +81,7 @@ on('message', async (data, socket) => {
  * this function gets triggered to handle any other data that is not handled above
  */
 on('default', async (data, socket) => {
-  // you can also send data to a specific connectionId (that you might have saved in a table)
+  // you can also send data to a specific connection id (that you might have saved in a table)
   // this is very useful for a broadcasting functionality
   await socket.send(data, connectionId)
 })
