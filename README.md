@@ -33,23 +33,12 @@ the directory should look something like this:
 |- serverless.yml
 |- package.json # optional
 ```
-
-Here's how the `socket.js` file works:
+The `socket.js` file is just a list of socket route/event handlers. Each handler takes two arguments, the first is the `data` passed in from the client, and the second is the `socket` object, which contains helpful data and methods.
 
 ```js
 
-/*
- * you simply write a handler function for each socket event
- *
- * the first argument of the callback function is the data passed in from the client
- * the second argument is the socket object. It contains helpful data and methods.
- */
-
-
-/*
- * this function gets triggered on new connections
- * if not provided, connections are successful by default
- */
+// this function gets triggered on new connections
+// if not provided, connections are successful by default
 on('connect', async (data, socket) => {
   // the following data are available in the socket object
   const { id, domain, stage } = socket
@@ -58,28 +47,22 @@ on('connect', async (data, socket) => {
   return 200
 })
 
-/*
- * this function gets triggered whenever a client disconnects
- * if not provided, disconnection is not handled
- */
+ // this function gets triggered whenever a client disconnects
+ // if not provided, disconnection is not handled
 on('disconnect', async (data, socket) => {
   // e.g. business logic that removes connection ids from a db table
 })
 
-/*
- * this function gets triggered whenever a client sends data to the specified route
- * in this example, you're handling the "message" route
- * so clients need to send the following JSON data: { "route": "message", "data": { "foo": "bar" } }
- */
+ // this function gets triggered whenever a client sends data to the specified route
+ // in this example, you're handling the "message" route
+ // so clients need to send the following JSON data: { "route": "message", "data": { "foo": "bar" } }
 on('message', async (data, socket) => {
 
   // you can send data to the connected client with the send() function
   await socket.send(data)
 })
 
-/*
- * this function gets triggered to handle any other data that is not handled above
- */
+// this function gets triggered to handle any other data that is not handled above
 on('default', async (data, socket) => {
   // you can also send data to a specific connection id (that you might have saved in a table)
   // this is very useful for a broadcasting functionality
