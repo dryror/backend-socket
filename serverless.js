@@ -1,8 +1,12 @@
 const { resolve } = require('path')
 const { prompt } = require('enquirer')
 const WebSocket = require('ws')
+const shortid = require('shortid')
 const chalk = require('chalk')
 const { Component, sleep, fileExists } = require('@serverless/components')
+
+// Set shortid characters to ones allowed by AWS resources (e.g. S3)
+shortid.characters('0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ@$')
 
 const isJson = (body) => {
   try {
@@ -16,11 +20,32 @@ const isJson = (body) => {
 class Socket extends Component {
   async default(inputs = {}) {
     inputs = inputs || {}
+
+    this.cli.status(`Running`)
+
+    // Validate - Check for socket.js
     const socketFilePath = resolve(inputs.code || process.cwd(), 'socket.js')
     if (!(await fileExists(socketFilePath))) {
       throw new Error(`No "socket.js" file found in the current directory.`)
       return null
     }
+
+    // Set name - must be lowercase
+    inputs.name = inputs.name || this.state.name || `websocket-backend-${this.context.stage}-${shortid()}`
+    inputs.name = inputs.name.toLowerCase()
+    this.state.name = inputs.name
+    await this.save()
+
+    // Create S3 Bucket
+    const lambdaBucket = await this.load('@serverless/aws-s3')
+    const lambdaBucketOutputs = await lambdaBucket({
+      name: `${inputs.name}-bucket`,
+      region: `us-east-1`,
+    })
+
+    this.state.name = inputs.name
+    this.state.lambdaBucketName = lambdaBucketOutputs.name
+    await this.save()
 
     // make sure user does not overwrite the following
     inputs.runtime = 'nodejs8.10'
@@ -28,10 +53,9 @@ class Socket extends Component {
     inputs.shims = [resolve(__dirname, './shim.js')]
     inputs.routeSelectionExpression = '$request.body.route'
     inputs.service = 'lambda.amazonaws.com'
-
-    inputs.name = inputs.name || 'serverless'
     inputs.description = inputs.description || 'Serverless Socket'
-    inputs.stage = this.stage
+    inputs.stage = this.context.stage
+    inputs.bucket = lambdaBucketOutputs.name
 
     this.cli.status(`Deploying AwsLambda`)
 
@@ -73,9 +97,11 @@ class Socket extends Component {
 
     const lambda = await this.load('@serverless/aws-lambda')
     const websockets = await this.load('@serverless/aws-websockets')
+    const lambdaBucket = await this.load('@serverless/aws-s3')
 
     const lambdaOutputs = await lambda.remove()
     const websocketsOutputs = await websockets.remove()
+    const lambdaBucketOutputs = await lambdaBucket.remove()
 
     this.state = {}
     await this.save()
