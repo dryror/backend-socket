@@ -14,13 +14,13 @@ Deploy a zero configuration Socket backend in seconds using [Serverless Componen
 
 ### 1. Install
 
-```
+```console
 $ npm install -g @serverless/components
 ```
 
 ### 2. Create
 
-```
+```console
 $ mkdir my-socket
 $ cd my-socket
 ```
@@ -102,7 +102,7 @@ Socket:
 
 ### 4. Deploy
 
-```
+```console
 $ components
 ```
 
