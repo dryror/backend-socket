@@ -25,7 +25,7 @@ $ mkdir my-socket
 $ cd my-socket
 ```
 
-the directory should look something like this:
+The directory should look something like this:
 
 
 ```
