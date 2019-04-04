@@ -70,6 +70,8 @@ on('default', async (data, socket) => {
 })
 ```
 
+For a real world example of how the `socket.js` file could be used, take a look at how the [Chat Application component is using it](https://github.com/serverless-components/ChatApp/blob/master/backend/socket.js).
+
 ### 3. Configure
 
 All the following inputs are optional. However, they allow you to configure your Lambda compute instance and pass environment variables.
