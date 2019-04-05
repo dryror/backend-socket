@@ -83,7 +83,7 @@ name: my-socket
 stage: dev
 
 Socket:
-  component: @serverless/socket
+  component: "@serverless/socket"
   inputs:
     name: my-socket
     description: My Socket Backend
