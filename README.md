@@ -41,6 +41,7 @@ The `socket.js` file is just a list of socket route/event handlers. Each handler
 // if not provided, connections are successful by default
 on('connect', async (data, socket) => {
   // the following data are available in the socket object
+  // id represnets the connection id of a certain client
   const { id, domain, stage } = socket
   
   // you can return status codes directly
