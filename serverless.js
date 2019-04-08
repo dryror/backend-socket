@@ -1,21 +1,5 @@
-const { resolve } = require('path')
-const { prompt } = require('enquirer')
-const WebSocket = require('ws')
-const shortid = require('shortid')
-const chalk = require('chalk')
-const { Component, sleep, fileExists } = require('@serverless/components')
-
-// Set shortid characters to ones allowed by AWS resources (e.g. S3)
-shortid.characters('0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ@$')
-
-const isJson = (body) => {
-  try {
-    JSON.parse(body)
-  } catch (e) {
-    return false
-  }
-  return true
-}
+const path = require('path')
+const { Component, fileExists } = require('@serverless/components')
 
 class Socket extends Component {
   async default(inputs = {}) {
@@ -23,15 +7,19 @@ class Socket extends Component {
 
     this.cli.status(`Running`)
 
+    const shortId = Math.random()
+      .toString(36)
+      .substring(6)
+
     // Validate - Check for socket.js
-    const socketFilePath = resolve(inputs.code || process.cwd(), 'socket.js')
+    const socketFilePath = path.resolve(inputs.code || process.cwd(), 'socket.js')
     if (!(await fileExists(socketFilePath))) {
       throw new Error(`No "socket.js" file found in the current directory.`)
       return null
     }
 
     // Set name - must be lowercase
-    inputs.name = inputs.name || this.state.name || `websocket-backend-${this.context.stage}-${shortid()}`
+    inputs.name = this.state.name || `websocket-backend-${this.context.stage}-${shortId}`
     inputs.name = inputs.name.toLowerCase()
     this.state.name = inputs.name
     await this.save()
@@ -42,7 +30,7 @@ class Socket extends Component {
     const lambdaBucket = await this.load('@serverless/aws-s3')
     const lambdaBucketOutputs = await lambdaBucket({
       name: `${inputs.name}-bucket`,
-      region: `us-east-1`,
+      region: `us-east-1`
     })
     this.state.lambdaBucketName = lambdaBucketOutputs.name
     await this.save()
@@ -52,7 +40,7 @@ class Socket extends Component {
     // make sure user does not overwrite the following
     inputs.runtime = 'nodejs8.10'
     inputs.handler = 'shim.socket'
-    inputs.shims = [resolve(__dirname, './shim.js')]
+    inputs.shims = [path.resolve(__dirname, './shim.js')]
     inputs.routeSelectionExpression = '$request.body.route'
     inputs.service = 'lambda.amazonaws.com'
     inputs.description = inputs.description || 'Serverless Socket'
@@ -60,6 +48,7 @@ class Socket extends Component {
     inputs.bucket = lambdaBucketOutputs.name
 
     const lambda = await this.load('@serverless/aws-lambda')
+
     const lambdaOutputs = await lambda(inputs)
 
     inputs.routes = {
@@ -77,7 +66,7 @@ class Socket extends Component {
     this.state.socketFilePath = socketFilePath
     await this.save()
 
-    let outputs = {
+    const outputs = {
       url: websocketsOutputs.url,
       code: {
         runtime: lambdaOutputs.runtime,
@@ -99,161 +88,13 @@ class Socket extends Component {
     const websockets = await this.load('@serverless/aws-websockets')
     const lambdaBucket = await this.load('@serverless/aws-s3')
 
-    const lambdaOutputs = await lambda.remove()
-    const websocketsOutputs = await websockets.remove()
-    const lambdaBucketOutputs = await lambdaBucket.remove()
+    await lambda.remove()
+    await websockets.remove()
+    await lambdaBucket.remove()
 
     this.state = {}
     await this.save()
     return {}
-  }
-
-  /*    /\
-   *   /!!\ CAUTION: Shitty code ahead :)
-   *  /_!!_\
-   */
-  connect(inputs = {}) {
-    // todo clean this up!
-    const url = inputs.local ? 'ws://localhost:8080' : this.state.url || 'ws://localhost:8080'
-    const prefix = inputs.route ? ` ${inputs.route}` : ` default`
-
-    // START LOCAL SERVER
-    const wss = new WebSocket.Server({ port: 8080 })
-    const connections = []
-    wss.on('connection', async (ws) => {
-      // todo support connect route
-      connections.push(ws)
-      ws.connectionId = Date.now()
-      const socket = {
-        id: ws.connectionId,
-        domain: url,
-        stage: 'local',
-        log: (msg) => this.cli.log(chalk.grey(`Server: ${msg}`)),
-        send: (data, id = ws.connectionId) => {
-          if (id === ws.connectionId) {
-            ws.send(data)
-          } else {
-            // todo what if connection not found?
-            const otherConnection = connections.find((connection) => connection.connectionId === id)
-            otherConnection.send(data)
-          }
-        }
-      }
-
-      const socketFilePath =
-        this.state.socketFilePath || resolve(inputs.code || process.cwd(), 'socket.js')
-
-      // we need to collect all defined routes in socket.js
-      // first before running their functions to check defined routes
-      const definedRoutes = []
-      global.on = async (route) => {
-        definedRoutes.push(route)
-      }
-      delete require.cache[require.resolve(socketFilePath)] // clear cache from previous invocation
-      require(socketFilePath)
-
-      ws.on('message', (body) => {
-        global.on = async (route, fn) => {
-          if (isJson(body)) {
-            const parsedBody = JSON.parse(body)
-            const receivedRoute = parsedBody.route
-
-            // auto parse data if json
-            const data = isJson(parsedBody.data) ? JSON.parse(parsedBody.data) : parsedBody.data
-            if (route === receivedRoute) {
-              // if received route is defined in socket.js
-              const response = await fn(data, socket)
-              // exit(response)
-              // otherwise run the default route
-            } else if (!definedRoutes.includes(receivedRoute) && route === 'default') {
-              // if received body does not contain a data property
-              // pass the entire body to the default route
-              const defaultData = data || body
-              const response = await fn(defaultData, socket)
-              // exit(response)
-            }
-          } else if (route === 'default') {
-            const response = await fn(body, socket)
-            // exit(response)
-          }
-        }
-        delete require.cache[require.resolve(socketFilePath)] // clear cache
-        require(socketFilePath)
-      })
-    })
-    // END LOCAL SERVER
-
-    const ws = new WebSocket(url)
-
-    this.cli.success('Connected')
-    this.cli.output('URL', `    ${url}`)
-
-    // todo there's def a better way to handle this!
-    process.on('unhandledRejection', (e) => {
-      console.log(e)
-      wss.close()
-      ws.close()
-    })
-
-    if (inputs.cli !== 'false' && inputs.cli !== false) {
-      ws.on('close', () => {
-        this.cli.log('')
-      })
-
-      ws.on('error', (e) => {
-        this.cli.status(e, 'red')
-        this.cli.log('')
-        ws.close()
-        wss.close()
-      })
-
-      ws.on('open', async () => {
-        // for some weird reason, there's an extra upper
-        // space when connecting remotely!
-        if (url !== 'ws://localhost:8080') {
-          // this.cli.log('')
-          // this.cli.log('')
-        }
-
-        await sleep(10) // I need to do this to refresh prompt
-        const response = await prompt({
-          type: 'input',
-          name: 'data',
-          message: prefix
-        })
-        if (response.data === 'exit') {
-          ws.close()
-          wss.close()
-        } else {
-          let body = response.data
-          if (inputs.route) {
-            body = JSON.stringify({ route: inputs.route, data: response.data })
-          }
-          ws.send(body)
-        }
-      })
-
-      ws.on('message', async (data) => {
-        this.cli.log(`${data}`)
-        const response = await prompt({
-          type: 'input',
-          name: 'data',
-          message: prefix
-        })
-        if (response.data === 'exit') {
-          ws.close()
-          wss.close()
-        } else {
-          let body = response.data
-          if (inputs.route) {
-            body = JSON.stringify({ route: inputs.route, data: response.data })
-          }
-          ws.send(body)
-        }
-      })
-    }
-
-    return ws
   }
 }
 

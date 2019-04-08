@@ -104,7 +104,21 @@ Socket:
 ### 4. Deploy
 
 ```console
-$ components
+Socket (master)$ components
+
+  Socket › outputs:
+  url:  'wss://3v1fypmyz8.execute-api.us-east-1.amazonaws.com/dev/'
+  code: 
+    runtime:  'nodejs8.10'
+    env:  []
+    timeout:  10
+    memory:  512
+  routes:  [ '$connect', '$disconnect', '$default' ]
+
+
+  36s › dev › Socket › done
+
+Socket (master)$
 ```
 
 &nbsp;
