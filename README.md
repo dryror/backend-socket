@@ -1,6 +1,8 @@
+# Serverless Socket
+
 &nbsp;
 
-Deploy a zero configuration Socket backend in seconds using [Serverless Components](https://github.com/serverless/components) with just a few lines of code.
+Deploy a zero configuration serverless websockets backend in seconds using [Serverless Components](https://github.com/serverless/components) with just a few lines of code.  The goal of this component is to offer the easiest experience possible for building realtime back-ends on AWS Lambda and AWS API Gateway.
 
 &nbsp;
 
