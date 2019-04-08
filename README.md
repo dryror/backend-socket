@@ -21,8 +21,7 @@ $ npm install -g @serverless/components
 ### 2. Create
 
 ```console
-$ mkdir my-socket
-$ cd my-socket
+$ mkdir my-socket && cd my-socket
 ```
 
 The directory should look something like this:
