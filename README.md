@@ -1,4 +1,4 @@
-# Serverless Socket
+# Socket
 
 &nbsp;
 
