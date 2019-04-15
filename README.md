@@ -33,7 +33,17 @@ The directory should look something like this:
 |- socket.js
 |- serverless.yml
 |- package.json # optional
+|- .env      # your development AWS api keys
+|- .env.prod # your production AWS api keys
 ```
+
+the `.env` files are not required if you have the aws keys set globally and you want to use a single stage, but they should look like this.
+
+```
+AWS_ACCESS_KEY_ID=XXX
+AWS_SECRET_ACCESS_KEY=XXX
+```
+
 The `socket.js` file is just a list of socket route/event handlers. Each handler takes two arguments, the first is the `data` passed in from the client, and the second is the `socket` object, which contains helpful data and methods.
 
 ```js
