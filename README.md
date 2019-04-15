@@ -33,8 +33,8 @@ The directory should look something like this:
 |- socket.js
 |- serverless.yml
 |- package.json # optional
-|- .env      # your development AWS api keys
-|- .env.prod # your production AWS api keys
+|- .env         # your development AWS api keys
+|- .env.prod    # your production AWS api keys
 ```
 
 the `.env` files are not required if you have the aws keys set globally and you want to use a single stage, but they should look like this.
