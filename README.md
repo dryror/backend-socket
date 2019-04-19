@@ -82,7 +82,7 @@ on('default', async (data, socket) => {
 })
 ```
 
-For a real world example of how the `socket.js` file could be used, take a look at how the [chat app component is using it](https://github.com/serverless-components/ChatApp/blob/master/backend/socket.js).
+For a real world example of how the `socket.js` file could be used, take a look at how the [chat app component is using it](https://github.com/serverless-components/chat-app/blob/master/backend/socket.js).
 
 ### 3. Configure
 
@@ -94,7 +94,7 @@ All the following inputs are optional. However, they allow you to configure your
 name: my-socket
 stage: dev
 
-Socket:
+mySocket:
   component: "@serverless/socket"
   inputs:
     name: my-socket
@@ -108,17 +108,15 @@ Socket:
     # the directory that contains the socket.js file.
     # If not provided, the default is the current working directory
     code: ./code
-
-
 ```
 
 ### 4. Deploy
 
 ```console
-Socket (master)$ components
+socket (master)$ components
 
   Socket › outputs:
-  url:  'wss://3v1fypmyz8.execute-api.us-east-1.amazonaws.com/dev/'
+  url:  'wss://3v1fypmsz8.execute-api.us-east-1.amazonaws.com/dev/'
   code: 
     runtime:  'nodejs8.10'
     env:  []
@@ -129,7 +127,7 @@ Socket (master)$ components
 
   36s › dev › Socket › done
 
-Socket (master)$
+socket (master)$
 ```
 
 &nbsp;
