@@ -1,11 +1,11 @@
 const path = require('path')
-const { Component, fileExists } = require('@serverless/components')
+const { Component, utils } = require('@serverless/components')
 
 class Socket extends Component {
   async default(inputs = {}) {
     inputs = inputs || {}
 
-    this.cli.status(`Running`)
+    this.ui.status(`Running`)
 
     const shortId = Math.random()
       .toString(36)
@@ -13,7 +13,7 @@ class Socket extends Component {
 
     // Validate - Check for socket.js
     const socketFilePath = path.resolve(inputs.code || process.cwd(), 'socket.js')
-    if (!(await fileExists(socketFilePath))) {
+    if (!(await utils.fileExists(socketFilePath))) {
       throw new Error(`No "socket.js" file found in the current directory.`)
       return null
     }
@@ -24,7 +24,7 @@ class Socket extends Component {
     this.state.name = inputs.name
     await this.save()
 
-    this.cli.status(`Deploying Aws S3 Bucket`)
+    this.ui.status(`Deploying Aws S3 Bucket`)
 
     // Create S3 Bucket
     const lambdaBucket = await this.load('@serverless/aws-s3')
@@ -35,7 +35,7 @@ class Socket extends Component {
     this.state.lambdaBucketName = lambdaBucketOutputs.name
     await this.save()
 
-    this.cli.status(`Deploying Aws Lambda Function`)
+    this.ui.status(`Deploying Aws Lambda Function`)
 
     // make sure user does not overwrite the following
     inputs.runtime = 'nodejs8.10'
@@ -57,7 +57,7 @@ class Socket extends Component {
       $default: lambdaOutputs.arn
     }
 
-    this.cli.status(`Deploying WebSockets`)
+    this.ui.status(`Deploying WebSockets`)
 
     const websockets = await this.load('@serverless/aws-websockets')
     const websocketsOutputs = await websockets(inputs)
@@ -77,12 +77,14 @@ class Socket extends Component {
       routes: Object.keys(websocketsOutputs.routes) || []
     }
 
-    this.cli.outputs(outputs)
+    this.ui.log()
+    this.ui.output('url', outputs.url)
+
     return outputs
   }
 
   async remove() {
-    this.cli.status(`Removing`)
+    this.ui.status(`Removing`)
 
     const lambda = await this.load('@serverless/aws-lambda')
     const websockets = await this.load('@serverless/aws-websockets')
