@@ -1,50 +1,41 @@
 const path = require('path')
-const { Component, utils } = require('@serverless/components')
+const { Component, utils } = require('@serverless/core')
 
 class Socket extends Component {
   async default(inputs = {}) {
-    inputs = inputs || {}
+    this.context.status(`Deploying`)
 
-    this.ui.status(`Running`)
+    inputs.code = inputs.code || process.cwd()
+    inputs.region = inputs.region || 'us-east-1'
 
-    const shortId = Math.random()
-      .toString(36)
-      .substring(6)
+    this.context.debug(`Deploying socket in ${inputs.code}.`)
+    this.context.debug(`Deploying socket to the ${inputs.region} region.`)
 
     // Validate - Check for socket.js
-    const socketFilePath = path.resolve(inputs.code || process.cwd(), 'socket.js')
+    const socketFilePath = path.resolve(inputs.code, 'socket.js')
     if (!(await utils.fileExists(socketFilePath))) {
       throw new Error(`No "socket.js" file found in the current directory.`)
-      return null
     }
 
-    // Set name - must be lowercase
-    inputs.name = this.state.name || `websocket-backend-${this.context.stage}-${shortId}`
-    inputs.name = inputs.name.toLowerCase()
-    this.state.name = inputs.name
-    await this.save()
-
-    this.ui.status(`Deploying Aws S3 Bucket`)
+    this.context.status(`Deploying S3 Bucket`)
+    this.context.debug(`Deploying s3 bucket for socket.`)
 
     // Create S3 Bucket
     const lambdaBucket = await this.load('@serverless/aws-s3')
     const lambdaBucketOutputs = await lambdaBucket({
-      name: `${inputs.name}-bucket`,
-      region: `us-east-1`
+      region: inputs.region
     })
-    this.state.lambdaBucketName = lambdaBucketOutputs.name
-    await this.save()
 
-    this.ui.status(`Deploying Aws Lambda Function`)
+    this.context.status(`Deploying Lambda Function`)
+    this.context.debug(`Deploying lambda for socket.`)
 
     // make sure user does not overwrite the following
-    inputs.runtime = 'nodejs8.10'
+    inputs.runtime = 'nodejs10.x'
     inputs.handler = 'shim.socket'
     inputs.shims = [path.resolve(__dirname, './shim.js')]
     inputs.routeSelectionExpression = '$request.body.route'
     inputs.service = 'lambda.amazonaws.com'
     inputs.description = inputs.description || 'Serverless Socket'
-    inputs.stage = this.context.stage
     inputs.bucket = lambdaBucketOutputs.name
 
     const lambda = await this.load('@serverless/aws-lambda')
@@ -57,34 +48,35 @@ class Socket extends Component {
       $default: lambdaOutputs.arn
     }
 
-    this.ui.status(`Deploying WebSockets`)
+    this.context.status(`Deploying WebSockets`)
+    this.context.debug(`Deploying aws websockets for socket.`)
 
     const websockets = await this.load('@serverless/aws-websockets')
     const websocketsOutputs = await websockets(inputs)
 
+    this.state.region = inputs.region
     this.state.url = websocketsOutputs.url
-    this.state.socketFilePath = socketFilePath
+    this.state.routes = Object.keys(websocketsOutputs.routes) || []
     await this.save()
 
-    const outputs = {
-      url: websocketsOutputs.url,
-      code: {
-        runtime: lambdaOutputs.runtime,
-        env: Object.keys(lambdaOutputs.env) || [],
-        timeout: lambdaOutputs.timeout,
-        memory: lambdaOutputs.memory
-      },
-      routes: Object.keys(websocketsOutputs.routes) || []
-    }
+    this.context.debug(
+      `Socket with id ${websocketsOutputs.id} was successfully deployed to the ${
+        inputs.region
+      } region.`
+    )
 
-    this.ui.log()
-    this.ui.output('url', outputs.url)
+    this.context.debug(`Socket id ${websocketsOutputs.id} url is ${websocketsOutputs.url}.`)
+
+    const outputs = {
+      url: this.state.url,
+      routes: this.state.routes
+    }
 
     return outputs
   }
 
   async remove() {
-    this.ui.status(`Removing`)
+    this.context.status(`Removing`)
 
     const lambda = await this.load('@serverless/aws-lambda')
     const websockets = await this.load('@serverless/aws-websockets')
