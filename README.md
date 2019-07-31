@@ -1,8 +1,8 @@
-# socket
+# backend-socket
 
 &nbsp;
 
-Deploy a zero configuration serverless websockets backend in seconds using [Serverless Components](https://github.com/serverless/components) with just a few lines of code.  The goal of this component is to offer the easiest experience possible for building realtime back-ends on AWS Lambda and AWS API Gateway.
+Deploy a zero configuration serverless websockets backend in seconds using [Serverless Components](https://github.com/serverless/components) with just a few lines of code. The goal of this component is to offer the easiest experience possible for building realtime back-ends on AWS Lambda and AWS API Gateway.
 
 &nbsp;
 
@@ -12,7 +12,6 @@ Deploy a zero configuration serverless websockets backend in seconds using [Serv
 4. [Deploy](#4-deploy)
 
 &nbsp;
-
 
 ### 1. Install
 
@@ -27,7 +26,6 @@ $ mkdir my-socket && cd my-socket
 ```
 
 The directory should look something like this:
-
 
 ```
 |- socket.js
@@ -47,29 +45,27 @@ AWS_SECRET_ACCESS_KEY=XXX
 The `socket.js` file is just a list of socket route/event handlers. Each handler takes two arguments, the first is the `data` passed in from the client, and the second is the `socket` object, which contains helpful data and methods.
 
 ```js
-
 // this function gets triggered on new connections
 // if not provided, connections are successful by default
 on('connect', async (data, socket) => {
   // the following data are available in the socket object
   // id represnets the connection id of a certain client
   const { id, domain, stage } = socket
-  
+
   // you can return status codes directly
   return 200
 })
 
- // this function gets triggered whenever a client disconnects
- // if not provided, disconnection is not handled
+// this function gets triggered whenever a client disconnects
+// if not provided, disconnection is not handled
 on('disconnect', async (data, socket) => {
   // e.g. business logic that removes connection ids from a db table
 })
 
- // this function gets triggered whenever a client sends data to the specified route
- // in this example, you're handling the "message" route
- // so clients need to send the following JSON data: { "route": "message", "data": { "foo": "bar" } }
+// this function gets triggered whenever a client sends data to the specified route
+// in this example, you're handling the "message" route
+// so clients need to send the following JSON data: { "route": "message", "data": { "foo": "bar" } }
 on('message', async (data, socket) => {
-
   // you can send data to the connected client with the send() function
   await socket.send(data)
 })
@@ -95,7 +91,7 @@ name: my-socket
 stage: dev
 
 mySocket:
-  component: "@serverless/socket"
+  component: '@serverless/backend-socket'
   inputs:
     name: my-socket
     description: My Socket Backend
@@ -104,7 +100,7 @@ mySocket:
     timeout: 10
     env:
       TABLE_NAME: my-table
-    
+
     # the directory that contains the socket.js file.
     # If not provided, the default is the current working directory
     code: ./code
@@ -117,7 +113,7 @@ socket (master)$ components
 
   Socket › outputs:
   url:  'wss://3v1fypmsz8.execute-api.us-east-1.amazonaws.com/dev/'
-  code: 
+  code:
     runtime:  'nodejs8.10'
     env:  []
     timeout:  10
