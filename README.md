@@ -16,7 +16,7 @@ Deploy a zero configuration serverless websockets backend in seconds using [Serv
 ### 1. Install
 
 ```console
-$ npm install -g @serverless/components
+$ npm install -g serverless
 ```
 
 ### 2. Create
