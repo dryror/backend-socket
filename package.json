@@ -1,6 +1,6 @@
 {
-  "name": "@serverless/socket",
-  "version": "1.0.0",
+  "name": "@serverless/backend-socket",
+  "version": "3.0.0",
   "main": "./serverless.js",
   "publishConfig": {
     "access": "public"
