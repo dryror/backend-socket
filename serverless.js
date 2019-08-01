@@ -1,24 +1,50 @@
 const path = require('path')
 const { Component, utils } = require('@serverless/core')
 
-class Socket extends Component {
+class BackendSocket extends Component {
   async default(inputs = {}) {
     this.context.status(`Deploying`)
 
-    inputs.code = inputs.code || process.cwd()
     inputs.region = inputs.region || 'us-east-1'
 
-    this.context.debug(`Deploying socket in ${inputs.code}.`)
-    this.context.debug(`Deploying socket to the ${inputs.region} region.`)
+    // Default to current working directory
+    inputs.code = inputs.code || {}
+    inputs.code.root = inputs.code.root ? path.resolve(inputs.code.root) : process.cwd()
+    if (inputs.code.src) {
+      inputs.code.src = path.join(inputs.code.root, inputs.code.src)
+    }
 
     // Validate - Check for socket.js
-    const socketFilePath = path.resolve(inputs.code, 'socket.js')
-    if (!(await utils.fileExists(socketFilePath))) {
+    let exists
+    if (inputs.code.src) {
+      exists = await utils.fileExists(path.join(inputs.code.src, 'socket.js'))
+    } else {
+      exists = await utils.fileExists(path.join(inputs.code.root, 'socket.js'))
+    }
+    if (!exists) {
       throw new Error(`No "socket.js" file found in the current directory.`)
     }
 
+    this.context.debug(`Deploying websockets backend to the ${inputs.region} region.`)
+
+    // If a hook is provided, build the assets
+    if (inputs.code.hook) {
+      this.context.status('Building assets')
+      this.context.debug(`Running ${inputs.code.hook} in ${inputs.code.root}.`)
+
+      const options = { cwd: inputs.code.root }
+      try {
+        await exec(inputs.code.hook, options)
+      } catch (err) {
+        console.error(err.stderr) // eslint-disable-line
+        throw new Error(
+          `Failed building code via "${inputs.code.hook}" due to the following error: "${err.stderr}"`
+        )
+      }
+    }
+
     this.context.status(`Deploying S3 Bucket`)
-    this.context.debug(`Deploying s3 bucket for socket.`)
+    this.context.debug(`Deploying s3 bucket for websockets backend code.`)
 
     // Create S3 Bucket
     const lambdaBucket = await this.load('@serverless/aws-s3')
@@ -27,7 +53,7 @@ class Socket extends Component {
     })
 
     this.context.status(`Deploying Lambda Function`)
-    this.context.debug(`Deploying lambda for socket.`)
+    this.context.debug(`Deploying AWS Lambda Function for websockets backend.`)
 
     // make sure user does not overwrite the following
     inputs.runtime = 'nodejs10.x'
@@ -38,8 +64,10 @@ class Socket extends Component {
     inputs.description = inputs.description || 'Serverless Socket'
     inputs.bucket = lambdaBucketOutputs.name
 
-    const lambda = await this.load('@serverless/aws-lambda')
+    // Modify code input to fit AWS Lambda Component's code input
+    inputs.code = inputs.code.src || input.code.root
 
+    const lambda = await this.load('@serverless/aws-lambda')
     const lambdaOutputs = await lambda(inputs)
 
     inputs.routes = {
@@ -48,8 +76,8 @@ class Socket extends Component {
       $default: lambdaOutputs.arn
     }
 
-    this.context.status(`Deploying WebSockets`)
-    this.context.debug(`Deploying aws websockets for socket.`)
+    this.context.status(`Deploying WebSockets Interface`)
+    this.context.debug(`Deploying AWS Websockets on AWS API Gateway`)
 
     const websockets = await this.load('@serverless/aws-websockets')
     const websocketsOutputs = await websockets(inputs)
@@ -64,7 +92,6 @@ class Socket extends Component {
         inputs.region
       } region.`
     )
-
     this.context.debug(`Socket id ${websocketsOutputs.id} url is ${websocketsOutputs.url}.`)
 
     const outputs = {
@@ -92,4 +119,4 @@ class Socket extends Component {
   }
 }
 
-module.exports = Socket
+module.exports = BackendSocket

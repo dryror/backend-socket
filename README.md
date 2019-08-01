@@ -1,4 +1,4 @@
-# backend-socket
+# Backend-Socket
 
 &nbsp;
 
@@ -95,7 +95,7 @@ mySocket:
   inputs:
     name: my-socket
     description: My Socket Backend
-    regoin: us-east-1
+    region: us-east-1
     memory: 128
     timeout: 10
     env:
