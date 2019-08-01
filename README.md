@@ -34,7 +34,7 @@ The directory should look something like this:
 |- .env         # your AWS api keys
 ```
 
-the `.env` files are not required if you have the aws keys set globally and you want to use a single stage, but they should look like this.
+the `.env` file should look like this
 
 ```
 AWS_ACCESS_KEY_ID=XXX
@@ -85,9 +85,6 @@ All the following inputs are optional. However, they allow you to configure your
 
 ```yml
 # serverless.yml
-
-name: my-socket
-stage: dev
 
 mySocket:
   component: '@serverless/backend-socket'
