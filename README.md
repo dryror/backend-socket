@@ -103,27 +103,14 @@ mySocket:
 
     # the directory that contains the socket.js file.
     # If not provided, the default is the current working directory
-    code: ./code
+    code:
+      src: ./code
 ```
 
 ### 4. Deploy
 
 ```console
-socket (master)$ components
-
-  Socket › outputs:
-  url:  'wss://3v1fypmsz8.execute-api.us-east-1.amazonaws.com/dev/'
-  code:
-    runtime:  'nodejs8.10'
-    env:  []
-    timeout:  10
-    memory:  512
-  routes:  [ '$connect', '$disconnect', '$default' ]
-
-
-  36s › dev › Socket › done
-
-socket (master)$
+$ serverless
 ```
 
 &nbsp;
