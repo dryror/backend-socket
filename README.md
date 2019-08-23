@@ -73,7 +73,7 @@ on('message', async (data, socket) => {
 on('default', async (data, socket) => {
   // you can also send data to a specific connection id (that you might have saved in a table)
   // this is very useful for a broadcasting functionality
-  await socket.send(data, connectionId)
+  await socket.send(data)
 })
 ```
 
